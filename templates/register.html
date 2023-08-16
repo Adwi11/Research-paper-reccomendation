@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<!-- <html>
+  <head>
+    <title>User Registration</title>
+  </head>
+  <body>
+    <h1>User Registration</h1>
+    <form method="POST" action="/register">
+      <label>Email:</label>
+      <input type="email" name="email" required /><br /><br />
+      <label>Interests:</label>
+      <input type="text" name="interests" /><br /><br />
+      <input type="submit" value="Register" />
+    </form>
+  </body>
+</html> -->
+<html>
+  <head>
+    <title>Need For Read Register</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <!-- <body
+    class="bg-gradient-to-r from-purple-500 to-indigo-500 min-h-screen flex items-center justify-center"
+  >
+    <div class="max-w-md bg-white p-8 rounded-lg shadow-lg">
+      <h1 class="text-3xl text-center mb-6">User Registration</h1>
+      <form class="space-y-6" method="POST" action="/register">
+        <div>
+          <label for="email" class="block mb-2">Email:</label>
+          <input
+            id="email"
+            type="email"
+            name="email"
+            required
+            class="w-full px-4 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+        </div>
+        <div>
+          <label for="interests" class="block mb-2">Interests:</label>
+          <input
+            id="interests"
+            type="text"
+            name="interests"
+            class="w-full px-4 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+        </div>
+        <div>
+          <button
+            type="submit"
+            class="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600"
+          >
+            Register
+          </button>
+        </div>
+      </form>
+    </div>
+  </body> -->
+  <body
+    class="bg-gradient-to-r from-purple-500 to-indigo-500 min-h-screen flex items-center justify-center"
+  >
+    <div class="max-w-md bg-white p-8 rounded-lg shadow-lg">
+      <h1 class="text-3xl text-center mb-6">User Interests</h1>
+
+      {% with messages = get_flashed_messages() %} {% if messages %} {% for
+      message in messages %} {% if message=='This email has already registered.'
+      %}
+      <div class="bg-red-400 text-white px-4 py-2 mb-4 rounded-lg">
+        {{ message }}
+      </div>
+      {% elif message == 'Registration successful!' %}
+      <div class="bg-green-400 text-white px-4 py-2 mb-4 rounded-lg">
+        {{ message }}
+      </div>
+      {% elif message == 'Interests cannot be empty !' %}
+      <div class="bg-red-400 text-white px-4 py-2 mb-4 rounded-lg">
+        {{message}}
+      </div>
+      {% endif %} {% endfor %} {% endif %} {% endwith %}
+
+      <form class="space-y-6" method="POST" action="/register">
+        <div>
+          <label for="email" class="block mb-2">Email:</label>
+          <input
+            id="email"
+            type="email"
+            name="email"
+            required
+            class="w-full px-4 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+        </div>
+        <div>
+          <label for="interests" class="block mb-2">Interests:</label>
+          <div class="relative">
+            <input
+              id="interests"
+              type="text"
+              name="interests"
+              class="w-full px-4 py-4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              onclick="clickInput()"
+            />
+            <div class="absolute right-0 top-0 mt-3 mr-2">
+              <button
+                type="button"
+                id="dropdown-btn"
+                class="bg-gray-200 rounded-lg px-3 py-2 flex items-center focus:outline-none"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  class="h-4 w-4"
+                >
+                  <path
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12zm-2-6a1 1 0 012 0v2h2a1 1 0 010 2h-2v2a1 1 0 01-2 0v-2H6a1 1 0 010-2h2v-2z"
+                  />
+                </svg>
+              </button>
+              <div
+                id="dropdown-menu"
+                class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg"
+              >
+                <ul class="py-2">
+                  <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                    Artificail Intelligence
+                  </li>
+                  <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                    Machine Learning
+                  </li>
+                  <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                    Generative AI
+                  </li>
+                  <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                    Fedearated Learning
+                  </li>
+                  <!-- Add more common interests here -->
+
+                  <!-- Add more common interests here -->
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <button
+            type="submit"
+            class="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600"
+          >
+            Register
+          </button>
+        </div>
+      </form>
+      <div id="error-message" class="text-red-500 mt-4 text-sm hidden"></div>
+    </div>
+
+    <script>
+      function clickInput() {
+        document.getElementById("dropdown-menu").classList.add("hidden");
+      }
+
+      const dropdownBtn = document.getElementById("dropdown-btn");
+      const dropdownMenu = document.getElementById("dropdown-menu");
+
+      dropdownBtn.addEventListener("click", () => {
+        dropdownMenu.classList.toggle("hidden");
+      });
+
+      const dropdownItems = dropdownMenu.querySelectorAll("li");
+      dropdownItems.forEach((item) => {
+        item.addEventListener("click", () => {
+          const interestsInput = document.getElementById("interests");
+          const currentValue = interestsInput.value;
+          const newValue =
+            currentValue.length > 0
+              ? currentValue + "," + item.textContent.trim()
+              : item.textContent.trim();
+          // console.log(item.textContent.trim());
+          interestsInput.value = newValue;
+        });
+      });
+    </script>
+  </body>
+</html>
