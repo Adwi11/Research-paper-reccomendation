@@ -7,8 +7,11 @@ import requests
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import schedule
+import threading
+from apscheduler.schedulers.background import BackgroundScheduler
 import time
+import re
+from validate_email import validate_email
 
 mydb = mysql.connector.connect(host='localhost', user='root', passwd='root')
 app = Flask(__name__)  # create your Flask instance '__name__' used as the root of the application 
@@ -37,6 +40,10 @@ def register():
         flash("Interests cannot be empty !",'error')
         return render_template('register.html')
     
+    if not validate_email(user.email, verify=True):
+        flash("Invalid or unreachable email address!", 'error')
+        return render_template('register.html')
+    
     try:
         cursor = mydb.cursor()
         count_query = f"SELECT COUNT(*) FROM {'formresponse.form'}"
@@ -48,7 +55,7 @@ def register():
 
         # Commit the changes
         mydb.commit()
-        send_recommendations()
+        # send_recommendations()   
         flash('Registration successful!', 'success')
     except mysql.connector.Error as e:
         error_message = str(e)
@@ -57,54 +64,61 @@ def register():
         else:
             flash('Error occurred during registration.', 'error')
         
-        # flash(f"Error: {str(e)}", 'error')
+        
 
-    return render_template('register.html') # create landing page (render new template or new page )
+    return render_template('register.html') 
+
+
 app.route('/send_recommendations')
 def send_recommendations():
-    pid = 1 #testing purposes 
     cursor = mydb.cursor()
-    interests_query = f"SELECT Interests FROM formresponse.form where Pid={pid}"
-    cursor.execute(interests_query)
-    interests = cursor.fetchone()[0].split(',')
+    count_query = f"SELECT COUNT(*) FROM {'formresponse.form'}"
+    cursor.execute(count_query)
+    row_count = cursor.fetchone()[0]
+    for pid in range(1,row_count+1):
+     
+        cursor = mydb.cursor()
+        interests_query = f"SELECT Interests FROM formresponse.form where Pid={pid}"
+        cursor.execute(interests_query)
+        interests = cursor.fetchone()[0].split(',')
 
-    search_url = "https://arxiv.org/search/"
-    params = {
-        "query": ' , '.join(interests),  # Combine user interests with OR operator for the search query (you can straight up use the string recieved)
-        "order": "announced_date_first",  # Sort the results by submission date (newest first)
-        "searchtype": "all",
-        "abstracts": "show",
-        "size": "50"
+        search_url = "https://arxiv.org/search/"
+        params = {
+            "query": ' , '.join(interests),  # Combine user interests with OR operator for the search query (you can straight up use the string recieved)
+            "order": "announced_date_first",  # Sort the results by submission date (newest first)
+            "searchtype": "all",
+            "abstracts": "show",
+            "size": "50"
 
-    }
-    response = requests.get(search_url, params=params)
-    print(response.url)
-    soup = BeautifulSoup(response.content, "html.parser")
-    results = soup.find_all("li", class_="arxiv-result") 
-    # print(results)
-    recommendations = []
-    print(results[:4])
-    for result in results:
-        title = result.find("p", class_="title is-5 mathjax").text.strip()
-        # print("title:",title)
-        authors = result.find("p", class_="authors").text.strip()
-        # print("authors:",authors)
-        abstract = result.find("p", class_="abstract").text.strip()
-        link = result.find("a")["href"]
+        }
+        response = requests.get(search_url, params=params)
+        # print(response.url) #FOR TESTING CONTENT
+        soup = BeautifulSoup(response.content, "html.parser")
+        results = soup.find_all("li", class_="arxiv-result") 
+        # print(results)
+        recommendations = []
+        print(results[:4])
+        for result in results[:4]:
+            title = result.find("p", class_="title is-5 mathjax").text.strip()
+            
+            authors = result.find("p", class_="authors").text.strip()
+            
+            abstract = result.find("p", class_="abstract").text.strip()
+            link = result.find("a")["href"]
 
-        paper = {
-        "title": title,
-        "authors": authors,
-        "abstract": abstract,
-        "link": "https://arxiv.org" + link
-    }
-        recommendations.append(paper)
-    
-    email_query = f"SELECT Email FROM formresponse.form where Pid={pid}"
-    cursor.execute(email_query)
-    email = cursor.fetchone()[0]
-    # print('recommendations:',recommendations)
-    send_email(email,recommendations)
+            paper = {
+            "title": title,
+            "authors": authors,
+            "abstract": abstract,
+            "link": "https://arxiv.org" + link
+        }
+            recommendations.append(paper)
+        
+        email_query = f"SELECT Email FROM formresponse.form where Pid={pid}"
+        cursor.execute(email_query)
+        email = cursor.fetchone()[0]
+        # print('recommendations:',recommendations)
+        send_email(email,recommendations)
     
     return "Recommendation cycle activated! Thank You"
 
@@ -131,15 +145,19 @@ def send_email(email,recommendations):
         server.login(smtp_username, smtp_password)
         server.sendmail(message['From'], message['To'], message.as_string())
 
-    
-
+# //TODO SEND TO ALL EMAILS 
+#// TODO ADDING AI
+#// TODO ADD CONRIBUTEORS PORTAL TYPE SCENE
+#//TODO: Create new landing page 
 
 if __name__=='__main__':
+    # schedule_thread = threading.Thread(target=schedule_job)
+    # schedule_thread.start()
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(send_recommendations, 'cron', hour=00, minute=int('42'))
+    scheduler.start()
     app.run(debug=True)
-    schedule.every().day.at('19:37').do(send_recommendations())
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+    
 
 
 
