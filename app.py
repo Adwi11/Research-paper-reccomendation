@@ -40,7 +40,7 @@ def register():
         flash("Interests cannot be empty !",'error')
         return render_template('register.html')
     
-    if not validate_email(user.email, verify=True):
+    if not validate_email(user.email):
         flash("Invalid or unreachable email address!", 'error')
         return render_template('register.html')
     
@@ -144,8 +144,7 @@ def send_email(email,recommendations):
         server.starttls()
         server.login(smtp_username, smtp_password)
         server.sendmail(message['From'], message['To'], message.as_string())
-
-# //TODO SEND TO ALL EMAILS 
+#//TODO: make new README    
 #// TODO ADDING AI
 #// TODO ADD CONRIBUTEORS PORTAL TYPE SCENE
 #//TODO: Create new landing page 
