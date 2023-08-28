@@ -31,9 +31,9 @@ In addition to its core features, this web app is designed to provide an enrichi
 - Frontend: HTML, CSS, JavaScript
 - Backend: Flask (Python)
 - Database: SQL
-- AI: (Mention any specific AI frameworks or tools you plan to integrate)
-- SMTP: (Mention the library or service you'll use for sending emails)
-- Community Portal: (Mention any specific frameworks or technologies you'll use for the community portal)
+- AI: AI hooks to be added 
+- SMTP: SMTPlib
+
 
 
 ## Run
