@@ -144,14 +144,15 @@ def send_email(email,recommendations):
         server.starttls()
         server.login(smtp_username, smtp_password)
         server.sendmail(message['From'], message['To'], message.as_string())
-#//TODO: make new README    
+  
 #// TODO ADDING AI
-#// TODO ADD CONRIBUTEORS PORTAL TYPE SCENE
+#//TODO: Previously sent research papers 
+#// TODO ADD CONRIBUTORS PORTAL TYPE SCENE
 #//TODO: Create new landing page 
+#//TODO: Click to Unsubscribe
 
 if __name__=='__main__':
-    # schedule_thread = threading.Thread(target=schedule_job)
-    # schedule_thread.start()
+   
     scheduler = BackgroundScheduler()
     scheduler.add_job(send_recommendations, 'cron', hour=00, minute=int('42'))
     scheduler.start()
