@@ -12,6 +12,10 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import time
 import re
 from validate_email import validate_email
+import openai
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
 
 mydb = mysql.connector.connect(host='localhost', user='root', passwd='root')
 app = Flask(__name__)  # create your Flask instance '__name__' used as the root of the application 
@@ -97,6 +101,8 @@ def send_recommendations():
         results = soup.find_all("li", class_="arxiv-result") 
         # print(results)
         recommendations = []
+        newTitles = []
+
         print(results[:4])
         for result in results[:4]:
             title = result.find("p", class_="title is-5 mathjax").text.strip()
@@ -113,6 +119,10 @@ def send_recommendations():
             "link": "https://arxiv.org" + link
         }
             recommendations.append(paper)
+            newTitles.append(paper['title'])
+        
+        newRecommended = newRecommendation(newTitles)
+        #TODO: Make some kind of combination of interests that are already present and new ones 
         
         email_query = f"SELECT Email FROM formresponse.form where Pid={pid}"
         cursor.execute(email_query)
@@ -145,11 +155,29 @@ def send_email(email,recommendations):
         server.login(smtp_username, smtp_password)
         server.sendmail(message['From'], message['To'], message.as_string())
   
+#//TODO: Previously sent research papers (to avoid sending them again)
 #// TODO ADDING AI
-#//TODO: Previously sent research papers 
 #// TODO ADD CONRIBUTORS PORTAL TYPE SCENE
 #//TODO: Create new landing page 
 #//TODO: Click to Unsubscribe
+
+def newRecommendation(newTitles):
+    openai.api_key = "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"
+    prompt = ['Give 4 me interest recommendations separated by commas based on these key words :'+ f'{i},' for i in newTitles]
+
+    response = openai.Completion.create(
+    engine="davinci",
+    prompt=prompt[0],
+    max_tokens=50,  
+    n=5, 
+    stop=None,  
+)
+    recommendations = [choice['text'] for choice in response.choices][0].split(',')
+
+    return recommendations
+    
+
+
 
 if __name__=='__main__':
    
